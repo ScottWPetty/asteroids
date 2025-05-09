@@ -1,11 +1,8 @@
 import pygame
 from circleshape import CircleShape
 from shot import Shot
-from constants import PLAYER_RADIUS
-from constants import PLAYER_TURN_SPEED
-from constants import PLAYER_SPEED
-from constants import PLAYER_SHOOT_SPEED
-from constants import PLAYER_SHOOT_COOLDOWN
+from life import Life
+from constants import PLAYER_RADIUS, PLAYER_TURN_SPEED, PLAYER_SPEED, PLAYER_SHOOT_SPEED, PLAYER_SHOOT_COOLDOWN
 
 class Player(CircleShape):
 
@@ -14,10 +11,13 @@ class Player(CircleShape):
         super().__init__(x, y, PLAYER_RADIUS)
         self.rotation = 0   # the direction the player is facing
         self.shot_timer = 0 # cooldown timer for shooting
+        self.life = Life()
+        self.i_frames = 0
+
 
     # method to calculate the player triangle
     # returns a list of points of the triangle
-    def triangle(self):
+    def player_triangle(self):
 
         # forward and right used to derive the three points
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -26,12 +26,14 @@ class Player(CircleShape):
         b = self.position - forward * self.radius - right
         c = self.position - forward * self.radius + right
         return [a, b, c]
-    
+
     # override the draw method of CircleShape to draw player triangle
     # pygame.draw.polygon(surface, color, points, width)
     # uses points from triangle() method
     def draw(self, screen):
-        pygame.draw.polygon(screen, "white", self.triangle(), 2)
+        pygame.draw.polygon(screen, "white", self.player_triangle(), 2)
+        self.life.draw(screen)
+        
 
     # method to rotate the player triangle
     def rotate(self, dt):
@@ -69,5 +71,25 @@ class Player(CircleShape):
     def shoot(self):
         shot = Shot(self.position.x, self.position.y)
         shot.velocity = pygame.Vector2(0, 1).rotate(self.rotation) * PLAYER_SHOOT_SPEED
-        
 
+    def get_lives(self):
+        return self.life.get_lives()
+    
+    def remove_life(self):
+        self.life.remove_life()
+    
+    def add_life(self):
+        self.life.add_life()
+
+    def has_i_frames(self):
+        if self.i_frames > 0:
+            return True
+        else:
+            return False
+    
+    def decrement_i_frames(self, dt):
+        if self.i_frames > 0:
+            self.i_frames -= dt
+    
+    def reset_i_frames(self):
+        self.i_frames = 2

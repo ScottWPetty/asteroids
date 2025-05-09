@@ -20,8 +20,10 @@ class Score():
         self.current_score += 10
     
     def draw(self, screen):
+        text_surface = self.score_font.render(f"Score: ", True, "white")
+        screen.blit(text_surface, (20, 30))
         text_surface = self.score_font.render(f"{self.current_score}", True, "white")
-        screen.blit(text_surface, (20, 20))
+        screen.blit(text_surface, (105, 30))
     
     def save_score(self, player_name):
         self.scores.append((player_name, self.current_score))

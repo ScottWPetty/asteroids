@@ -1,6 +1,5 @@
 To-do list:
 
-- add a scoring system
 - implement multiple lives
 - add an explosion effect for the asteroids
 - add acceleration to the player movement

@@ -28,6 +28,8 @@ def main():
     PAUSE = "Pause"
     PLAYING = "Playing"
     QUIT = "Quit"
+    GAME_OVER = "Game Over"
+    SCORE_SCREEN = "Score Screen"
 
     # set initial state to TITLE
     state = TITLE
@@ -52,6 +54,7 @@ def main():
     Asteroid.containers = (asteroids, updatable, drawable)
     AsteroidField.containers = (updatable)
     Shot.containers = (shots, updatable, drawable)
+
 
     ########################################################################
     # Main Loop
@@ -149,72 +152,26 @@ def main():
                 # check for collision between player and asteroids
                 for asteroid in asteroids:
                     if player.collision_occured(asteroid):
+                        lives = player.get_lives()
 
-                        # check if high score was attained
-                        if score.check_if_high_score():
-                            
-                            # get player name and save the score
-                            active = True
-                            name = ""
-                            input_timer = 0.05  # machine too fast
+                        # check if the player is invulnerable
+                        if player.has_i_frames():
+                            pass
 
-                            while active:
-
-                                # stop the program on window close
-                                for event in pygame.event.get():
-                                    if event.type == pygame.QUIT:
-                                        state == QUIT
-                                    
-                                    if input_timer <= 0:
-
-                                        if event.type == pygame.KEYDOWN:
-                                            input_timer = 0.05
-                                            if event.key == pygame.K_RETURN:
-                                                active = False
-                                                score.save_score(name)
-                                            elif event.key == pygame.K_BACKSPACE:
-                                                name = name[:-1]
-                                            else:
-                                                if event.unicode.isalnum() or event.unicode == " ":
-                                                    name += event.unicode
-
-                                ### render name entry prompt to screen ###
-
-                                # build header surface
-                                header_font = pygame.font.SysFont(None, 50)
-                                header_surface = header_font.render(f"New High Score: {score.get_current_score()}", True, "white")
-                                header_surface_rect = header_surface.get_rect()
-                                header_surface_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3)
-
-                                # build prompt surface
-                                prompt_font = pygame.font.SysFont(None, 36)
-                                prompt_surface = prompt_font.render("Enter your name", True, "white")
-                                prompt_surface_rect = prompt_surface.get_rect()
-                                prompt_surface_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-
-                                # build name surface
-                                name_surface = prompt_font.render(name, True, "white")
-                                name_surface_rect = name_surface.get_rect()
-                                name_surface_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 60)
-
-                                # blit everything to the screen
-                                screen.fill("black")
-                                screen.blit(header_surface, header_surface_rect)
-                                screen.blit(prompt_surface, prompt_surface_rect)
-                                screen.blit(name_surface, name_surface_rect)
-
-                                # refresh display
-                                pygame.display.flip()
-                                dt = clock.tick(60) / 1000
-                                input_timer -= dt
                         
-                        ### need to implement a game over state at this point ###
-                        ### ex: lose a life, want to play again?, etc ###
+                        elif lives > 1:
+                            
+                            # start the i_frame cooldown
+                            player.reset_i_frames()
 
-                        # kill all game objects and reset to title screen
-                        state = TITLE
-                        for object in updatable:
-                            object.kill()   
+                            # take a life away
+                            player.remove_life()
+
+                            # split the asteroid
+                            asteroid.split()
+
+                        else:
+                            state = GAME_OVER 
 
                 # check for collision between asteroids and bullets
                 for asteroid in asteroids:
@@ -223,6 +180,9 @@ def main():
                             asteroid.split()
                             shot.kill()
                             score.increment_score()
+
+                # i_frame cooldown
+                player.decrement_i_frames(dt)
 
                 # refresh the screen after all game logic for the frame is complete
                 pygame.display.flip() 
@@ -289,6 +249,105 @@ def main():
                                 pause.set_selection("")
                         
                         input_timer -= dt
+
+        if state == SCORE_SCREEN:
+
+            # get player name and save the score
+            active = True
+            name = ""
+            input_timer = 0.05  # machine too fast
+
+            while active:
+
+                # stop the program on window close
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        state == QUIT
+                                    
+                    if input_timer <= 0:
+
+                        if event.type == pygame.KEYDOWN:
+                            input_timer = 0.05
+                            if event.key == pygame.K_RETURN:
+                                active = False
+                                score.save_score(name)
+                            elif event.key == pygame.K_BACKSPACE:
+                                name = name[:-1]
+                            else:
+                                if event.unicode.isalnum() or event.unicode == " ":
+                                    name += event.unicode
+
+                ### render name entry prompt to screen ###
+
+                # build header surface
+                header_font = pygame.font.SysFont(None, 50)
+                header_surface = header_font.render(f"New High Score: {score.get_current_score()}", True, "white")
+                header_surface_rect = header_surface.get_rect()
+                header_surface_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3)
+
+                # build prompt surface
+                prompt_font = pygame.font.SysFont(None, 36)
+                prompt_surface = prompt_font.render("Enter your name", True, "white")
+                prompt_surface_rect = prompt_surface.get_rect()
+                prompt_surface_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+
+                # build name surface
+                name_surface = prompt_font.render(name, True, "white")
+                name_surface_rect = name_surface.get_rect()
+                name_surface_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 60)
+
+                # blit everything to the screen
+                screen.fill("black")
+                screen.blit(header_surface, header_surface_rect)
+                screen.blit(prompt_surface, prompt_surface_rect)
+                screen.blit(name_surface, name_surface_rect)
+
+                # refresh display
+                pygame.display.flip()
+                dt = clock.tick(60) / 1000
+                input_timer -= dt
+            
+            state = TITLE
+
+        if state == GAME_OVER:
+            player.kill()
+            game_over_timer = 4
+            while game_over_timer > 0:
+
+                # fill screen with black color
+                screen.fill("black")
+
+                # display "game over"
+                font = pygame.font.SysFont(None, 50)
+                text = font.render(f"GAME OVER", True, "white")
+                text_rect = text.get_rect()
+                text_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+                screen.blit(text, text_rect)
+
+                # update all objects in updatable
+                updatable.update(dt)
+
+                # draw objects
+                for object in drawable:
+                    object.draw(screen)
+                score.draw(screen)
+
+                pygame.display.flip()
+                dt = clock.tick(60) / 1000
+                game_over_timer -= dt
+
+
+            # check if high score was attained
+            if score.check_if_high_score():
+                state = SCORE_SCREEN
+                for object in updatable:
+                    object.kill()
+
+            else:
+                # kill all game objects and reset to title screen
+                state = TITLE
+                for object in updatable:
+                    object.kill() 
 
         if state == QUIT:
             pygame.quit()
