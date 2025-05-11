@@ -1,4 +1,6 @@
 import pygame
+import os
+import random
 from circleshape import CircleShape
 from shot import Shot
 from life import Life
@@ -16,6 +18,13 @@ class Player(CircleShape):
         self.player_color = [255, 255, 255]
         self.i_frame_color = [255, 0, 0]
         self.i_frame_color_dimming = True # controls oscillating character brightness when using i-frames
+
+        # sounds
+        self.shoot_sounds = []
+        for file_name in os.listdir("sounds/weapon_1"):
+            file_path = os.path.join("sounds/weapon_1", file_name)
+            self.shoot_sounds.append(pygame.mixer.Sound(file_path))
+        
 
     # method to calculate the player triangle
     # returns a list of points of the triangle
@@ -62,6 +71,9 @@ class Player(CircleShape):
             # check if player tried to shoot
             if keys[pygame.K_SPACE]:
                 self.shoot()
+                sound = random.choice(self.shoot_sounds)
+                sound.play()
+
                 # reset shooting cooldown
                 self.shot_timer = PLAYER_SHOOT_COOLDOWN
         else:   

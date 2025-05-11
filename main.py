@@ -72,8 +72,8 @@ def main():
             title = Title()
 
             #start music
-            pygame.mixer.music.set_volume(1.0)
             pygame.mixer.music.load("sounds/high-energy-edm-synthesizer-259761.mp3")
+            pygame.mixer.music.set_volume(0.7)
             pygame.mixer.music.play(-1)
 
             while state == TITLE:
@@ -101,7 +101,8 @@ def main():
 
                     # handle sound
                     pygame.mixer.music.fadeout(1000)
-                    clock.tick(1)
+                    pygame.time.delay(1000)
+                    pygame.mixer.music.stop()
 
                 if selection == "Quit":
                     state = QUIT
@@ -143,10 +144,11 @@ def main():
 
             # start music
             if pygame.mixer.music.get_busy():
-                pygame.mixer.music.set_volume(1.0)
+                pygame.mixer.music.set_volume(0.7)
             
             else:
                 pygame.mixer.music.load("sounds/kim-lightyear-legends-109307.mp3")
+                pygame.mixer.music.set_volume(0.7)
                 pygame.mixer.music.play(-1)
 
             while state == PLAYING:
@@ -166,7 +168,6 @@ def main():
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_ESCAPE]:
                     state = PAUSE
-                    pygame.mixer.music.set_volume(0.5)
 
                 # loop over all drawables and draw them individually
                 for object in drawable:
@@ -223,6 +224,9 @@ def main():
             ##############################################################################
             pause = Pause()
 
+            # handle sound
+            pygame.mixer.music.set_volume(0.3)
+
             while state == PAUSE:
 
                 # stop the program on window close
@@ -241,7 +245,7 @@ def main():
                     state = PLAYING
 
                 if selection == "Quit to Title": 
-                    state = TITLE
+                    state = SCORE_SCREEN
 
                     for object in updatable:
                         object.kill()
@@ -276,10 +280,24 @@ def main():
 
         if state == SCORE_SCREEN:
 
-            # get player name and save the score
-            active = True
-            name = ""
-            input_timer = 0.05  # machine too fast
+            # check if high score was attained
+            if score.check_if_high_score():
+                state = SCORE_SCREEN
+                for object in updatable:
+                    object.kill()
+
+                # get player name and save the score
+                active = True
+                name = ""
+                input_timer = 0.05  # machine too fast
+
+            else:
+                # kill all game objects and reset to title screen
+                state = TITLE
+                active = False
+                
+                for object in updatable:
+                    object.kill()
 
             while active:
 
@@ -360,18 +378,7 @@ def main():
                 dt = clock.tick(60) / 1000
                 game_over_timer -= dt
 
-
-            # check if high score was attained
-            if score.check_if_high_score():
-                state = SCORE_SCREEN
-                for object in updatable:
-                    object.kill()
-
-            else:
-                # kill all game objects and reset to title screen
-                state = TITLE
-                for object in updatable:
-                    object.kill() 
+            state == SCORE_SCREEN 
 
         if state == QUIT:
             pygame.quit()

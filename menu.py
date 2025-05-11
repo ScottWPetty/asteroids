@@ -11,6 +11,12 @@ class Menu():
         self.options = []
         for option in options:
             self.options.append(option)
+        
+        # sounds
+        self.indicator_sound = pygame.mixer.Sound("sounds/indicator_sound/Blip5.wav")
+        self.indicator_sound.set_volume(.5)
+        self.select_sound = pygame.mixer.Sound("sounds/indicator_sound/Blip7.wav")
+        self.select_sound.set_volume(.5)
     
     def draw(self, screen):
         # sub-classes override
@@ -24,15 +30,19 @@ class Menu():
                 if self.selection_index > 0:
                     self.selection_index -= 1
                     self.indicator.indicator_up()
+                    self.indicator_sound.play()
                     self.selection_timer = 0.1
             if keys[pygame.K_s]:
                 if self.selection_index < len(self.options) - 1:
                     self.selection_index += 1
                     self.indicator.indicator_down()
+                    self.indicator_sound.play()
                     self.selection_timer = 0.1
             if keys[pygame.K_RETURN]:
                 self.selection_timer = 0.1
                 self.selection = self.options[self.selection_index]
+                self.select_sound.play()
+
         else:   
             # decrement the selection timer
             self.selection_timer -= dt

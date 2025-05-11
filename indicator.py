@@ -8,7 +8,6 @@ class Indicator():
         self.x = SCREEN_WIDTH // 2 - 150
         self.y = SCREEN_HEIGHT // 2
         self.radius = 20
-        self.indicator_sound = pygame.mixer.Sound("sounds/indicator_sound/Blip5.wav")
     
     def triangle(self):
         angle_1 = math.radians(150)
@@ -29,8 +28,7 @@ class Indicator():
     
     def indicator_up(self):
         self.y -= 60
-        self.indicator_sound.play()
     
     def indicator_down(self):
         self.y += 60
-        self.indicator_sound.play()
+
