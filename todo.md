@@ -1,6 +1,6 @@
 To-do list:
 
-- implement multiple lives
+- implement multiple lives - done
 - add an explosion effect for the asteroids
 - add acceleration to the player movement
 - make the objects wrap around the screen instead of disappearing

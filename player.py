@@ -13,7 +13,9 @@ class Player(CircleShape):
         self.shot_timer = 0 # cooldown timer for shooting
         self.life = Life()
         self.i_frames = 0
-
+        self.player_color = [255, 255, 255]
+        self.i_frame_color = [255, 0, 0]
+        self.i_frame_color_dimming = True # controls oscillating character brightness when using i-frames
 
     # method to calculate the player triangle
     # returns a list of points of the triangle
@@ -31,8 +33,12 @@ class Player(CircleShape):
     # pygame.draw.polygon(surface, color, points, width)
     # uses points from triangle() method
     def draw(self, screen):
-        pygame.draw.polygon(screen, "white", self.player_triangle(), 2)
-        self.life.draw(screen)
+        if self.has_i_frames():
+            pygame.draw.polygon(screen, self.i_frame_color, self.player_triangle(), 2)
+            self.life.draw(screen)
+        else:
+            pygame.draw.polygon(screen, self.player_color, self.player_triangle(), 2)
+            self.life.draw(screen)
         
 
     # method to rotate the player triangle
@@ -65,6 +71,14 @@ class Player(CircleShape):
     # method to get new position for movement
     def move(self, dt):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
+
+        # to add acceleration replace PLAYER_SPEED with an increasing value that caps a PLAYER_SPEED
+        # i.e. member variables: current speed, acceleration.
+        # use current speed and increment by acceleration until current speed == PLAYER_SPEED
+        # need to constantly travel at current speed. start at 0 at beginning of game
+        # also need to constantly travel in the same direction and just offset it by the current speed while facing another direction
+        # this is tricky because current speed is different for different directions at any given time
+        # idk how to implement this might need to look it up.
         self.position += forward * PLAYER_SPEED * dt
 
     # method to create Shot objects (bullets)
@@ -90,6 +104,14 @@ class Player(CircleShape):
     def decrement_i_frames(self, dt):
         if self.i_frames > 0:
             self.i_frames -= dt
-    
+            if self.i_frame_color_dimming == True:
+                self.i_frame_color[0] -= 4
+                if self.i_frame_color[0] <= 50:
+                    self.i_frame_color_dimming = False
+            if self.i_frame_color_dimming == False:
+                self.i_frame_color[0] += 4
+                if self.i_frame_color[0] >= 250:
+                    self.i_frame_color_dimming = True
+
     def reset_i_frames(self):
         self.i_frames = 2

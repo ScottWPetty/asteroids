@@ -21,6 +21,7 @@ def main():
     #################################################################
 
     # initialize the pygame module
+    pygame.mixer.init()
     pygame.init()
 
     # State variables
@@ -36,6 +37,7 @@ def main():
 
     # create a window using width and height from constants.py
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
+    pygame.display.set_caption("Spaceballz")
 
     # clock object to keep track of time
     clock = pygame.time.Clock()
@@ -65,7 +67,15 @@ def main():
             ########################################################################
             # Title Screen Loop
             ########################################################################
+
+            # instantiate Title object
             title = Title()
+
+            #start music
+            pygame.mixer.music.set_volume(1.0)
+            pygame.mixer.music.load("sounds/high-energy-edm-synthesizer-259761.mp3")
+            pygame.mixer.music.play(-1)
+
             while state == TITLE:
 
                 # stop the program on window close
@@ -88,6 +98,10 @@ def main():
                     asteroid_field = AsteroidField()
                     score = Score()
                     state = PLAYING
+
+                    # handle sound
+                    pygame.mixer.music.fadeout(1000)
+                    clock.tick(1)
 
                 if selection == "Quit":
                     state = QUIT
@@ -126,6 +140,15 @@ def main():
             ########################################################################
             # Game Loop
             ########################################################################
+
+            # start music
+            if pygame.mixer.music.get_busy():
+                pygame.mixer.music.set_volume(1.0)
+            
+            else:
+                pygame.mixer.music.load("sounds/kim-lightyear-legends-109307.mp3")
+                pygame.mixer.music.play(-1)
+
             while state == PLAYING:
 
                 # stop the program on window close
@@ -143,6 +166,7 @@ def main():
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_ESCAPE]:
                     state = PAUSE
+                    pygame.mixer.music.set_volume(0.5)
 
                 # loop over all drawables and draw them individually
                 for object in drawable:
