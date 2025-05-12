@@ -3,8 +3,8 @@ from menu import Menu
 from constants import SCREEN_HEIGHT, SCREEN_WIDTH
 
 class Title(Menu):
-    def __init__(self):
-        super().__init__(["Play", "Leaderboard", "Settings", "Quit"])
+    def __init__(self, joystick):
+        super().__init__(["Play", "Leaderboard", "Settings", "Quit"], joystick)
         self.title_font = pygame.font.SysFont(None, 60)
         self.menu_font = pygame.font.SysFont(None, 36)
         self.title = "SPACEBALLZ"

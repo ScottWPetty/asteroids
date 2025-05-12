@@ -23,6 +23,9 @@ def main():
     # initialize the pygame module
     pygame.mixer.init()
     pygame.init()
+    pygame.joystick.init()
+    joystick = pygame.joystick.Joystick(0)
+    joystick.init()
 
     # State variables
     TITLE = "Title"
@@ -69,11 +72,11 @@ def main():
             ########################################################################
 
             # instantiate Title object
-            title = Title()
+            title = Title(joystick)
 
             #start music
-            pygame.mixer.music.load("sounds/high-energy-edm-synthesizer-259761.mp3")
-            pygame.mixer.music.set_volume(0.7)
+            pygame.mixer.music.load("sounds/cinematic-halloween-synthesizer-music-248525.mp3")
+            pygame.mixer.music.set_volume(0.8)
             pygame.mixer.music.play(-1)
 
             while state == TITLE:
@@ -94,7 +97,7 @@ def main():
                 if selection == "Play":
 
                     # instantiate game objects
-                    player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+                    player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, joystick)
                     asteroid_field = AsteroidField()
                     score = Score()
                     state = PLAYING
@@ -127,7 +130,8 @@ def main():
                         # check for input on leaderboard screen
                         if input_timer <= 0:
                             keys = pygame.key.get_pressed()
-                            if any(keys):
+                            button_states = [joystick.get_button(i) for i in range(joystick.get_numbuttons())]
+                            if any(keys) or any(button_states):
                                 selection = None
                                 title.set_selection("")
 
@@ -147,9 +151,10 @@ def main():
                 pygame.mixer.music.set_volume(0.7)
             
             else:
-                pygame.mixer.music.load("sounds/kim-lightyear-legends-109307.mp3")
+                pygame.mixer.music.load("sounds/high-energy-edm-synthesizer-259761.mp3")
                 pygame.mixer.music.set_volume(0.7)
                 pygame.mixer.music.play(-1)
+            
 
             while state == PLAYING:
 
@@ -166,7 +171,8 @@ def main():
 
                 # check for pause
                 keys = pygame.key.get_pressed()
-                if keys[pygame.K_ESCAPE]:
+                button_states = [joystick.get_button(i) for i in range(joystick.get_numbuttons())]
+                if keys[pygame.K_ESCAPE] or button_states[7]:
                     state = PAUSE
 
                 # loop over all drawables and draw them individually
@@ -192,11 +198,16 @@ def main():
                             # take a life away
                             player.remove_life()
 
+                            # sound
+                            player_hit = pygame.mixer.Sound("sounds/player_hit/Boom1.wav")
+                            player_hit.set_volume(0.8)
+                            player_hit.play()
+
                             # split the asteroid
                             asteroid.split()
 
                         else:
-                            state = GAME_OVER 
+                            state = GAME_OVER
 
                 # check for collision between asteroids and bullets
                 for asteroid in asteroids:
@@ -222,7 +233,7 @@ def main():
             ##############################################################################
             # Pause Menu Loop
             ##############################################################################
-            pause = Pause()
+            pause = Pause(joystick)
 
             # handle sound
             pygame.mixer.music.set_volume(0.3)
@@ -272,7 +283,8 @@ def main():
                         # check for input on leaderboard screen
                         if input_timer <= 0:
                             keys = pygame.key.get_pressed()
-                            if any(keys):
+                            button_states = [joystick.get_button(i) for i in range(joystick.get_numbuttons())]
+                            if any(keys) or any(button_states):
                                 selection = None
                                 pause.set_selection("")
                         
@@ -295,7 +307,7 @@ def main():
                 # kill all game objects and reset to title screen
                 state = TITLE
                 active = False
-                
+
                 for object in updatable:
                     object.kill()
 
@@ -352,9 +364,24 @@ def main():
             state = TITLE
 
         if state == GAME_OVER:
-            player.kill()
+            
+            # sound
+            player_death = pygame.mixer.Sound("sounds/player_death/Boom1 (1).wav")
+            player_death.set_volume(0.8)
+            player_death.play()
+
             game_over_timer = 4
+            player_spin_out_timer = 1.5
+
             while game_over_timer > 0:
+                
+                # player spin-out
+                if player_spin_out_timer > 0:
+                    player.rotate(dt * 4)
+                
+                else:
+                    if player in drawable:
+                        player.kill()
 
                 # fill screen with black color
                 screen.fill("black")
@@ -377,8 +404,9 @@ def main():
                 pygame.display.flip()
                 dt = clock.tick(60) / 1000
                 game_over_timer -= dt
+                player_spin_out_timer -= dt
 
-            state == SCORE_SCREEN 
+            state = SCORE_SCREEN 
 
         if state == QUIT:
             pygame.quit()

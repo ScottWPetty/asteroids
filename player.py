@@ -9,15 +9,22 @@ from constants import PLAYER_RADIUS, PLAYER_TURN_SPEED, PLAYER_SPEED, PLAYER_SHO
 class Player(CircleShape):
 
     # constructor
-    def __init__(self, x, y): # (x, y) = center point of player triangle
+    def __init__(self, x, y, joystick): # (x, y) = center point of player triangle
         super().__init__(x, y, PLAYER_RADIUS)
         self.rotation = 0   # the direction the player is facing
         self.shot_timer = 0 # cooldown timer for shooting
         self.life = Life()
         self.i_frames = 0
-        self.player_color = [255, 255, 255]
+        self.player_color = "white"
         self.i_frame_color = [255, 0, 0]
         self.i_frame_color_dimming = True # controls oscillating character brightness when using i-frames
+        
+        # controller input
+        self.joystick = joystick
+
+        # movement
+        self.current_player_turn_speed = 0
+        self.current_player_speed = 0
 
         # sounds
         self.shoot_sounds = []
@@ -57,19 +64,21 @@ class Player(CircleShape):
     # method to get movement key inputs and update game logic
     def update(self, dt):
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_a]:
+        button_states = [self.joystick.get_button(i) for i in range(self.joystick.get_numbuttons())]
+        hat = self.joystick.get_hat(0)
+        if keys[pygame.K_a] or hat == (-1, 0) or hat == (-1, 1) or hat == (-1, -1):
             self.rotate(dt * -1) 
-        if keys[pygame.K_d]:
+        if keys[pygame.K_d] or hat == (1, 0) or hat == (1, 1) or hat == (1, -1):
             self.rotate(dt)
-        if keys[pygame.K_w]:
+        if keys[pygame.K_w] or hat == (0, 1) or hat == (1, 1) or hat == (-1 , 1):
             self.move(dt)
-        if keys[pygame.K_s]:
+        if keys[pygame.K_s] or hat == (0, -1) or hat == (1, -1) or hat == (-1, -1):
             self.move(dt * -1)
 
         # check if shooting is off cooldown
         if self.shot_timer <= 0:
             # check if player tried to shoot
-            if keys[pygame.K_SPACE]:
+            if keys[pygame.K_SPACE] or button_states[0]:
                 self.shoot()
                 sound = random.choice(self.shoot_sounds)
                 sound.play()

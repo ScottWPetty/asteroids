@@ -3,8 +3,8 @@ from menu import Menu
 from constants import SCREEN_HEIGHT, SCREEN_WIDTH
 
 class Pause(Menu):
-    def __init__(self):
-        super().__init__(["Resume", "Leaderboard", "Settings", "Quit to Title"])
+    def __init__(self, joystick):
+        super().__init__(["Resume", "Leaderboard", "Settings", "Quit to Title"], joystick)
         self.menu_font = pygame.font.SysFont(None, 36)
     
     def draw(self, screen):
